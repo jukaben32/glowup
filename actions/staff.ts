@@ -26,6 +26,8 @@ export async function createStaffMember(formData: FormData) {
   const role = formData.get('role') as string
   const email = formData.get('email') as string
   const phone = formData.get('phone') as string
+  const bio = formData.get('bio') as string
+  const avatar_url = formData.get('avatar_url') as string
 
   const { data, error } = await supabase
     .from('staff_members')
@@ -35,6 +37,8 @@ export async function createStaffMember(formData: FormData) {
       role,
       email,
       phone,
+      bio,
+      avatar_url,
     })
     .select()
     .single()

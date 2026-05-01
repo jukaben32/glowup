@@ -6,7 +6,9 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { getStaffMembers, createStaffMember } from '@/actions/staff'
 import { Badge } from '@/components/ui/badge'
-import { UserCircle } from 'lucide-react'
+import { UserCircle, Mail, Phone, Info, Image as ImageIcon } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 export default async function TeamPage() {
   const { data: staff, error } = await getStaffMembers()
@@ -51,13 +53,35 @@ export default async function TeamPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" placeholder="maria@salon.com" />
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input id="email" name="email" type="email" placeholder="maria@salon.com" className="pl-9" />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" name="phone" placeholder="+1 (555) 123-4567" />
+                <div className="relative">
+                  <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input id="phone" name="phone" placeholder="+1 (555) 123-4567" className="pl-9" />
+                </div>
               </div>
-              <Button type="submit" className="w-full gradient-brand text-white">
+              <div className="space-y-2">
+                <Label htmlFor="avatar_url">Photo URL</Label>
+                <div className="relative">
+                  <ImageIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input id="avatar_url" name="avatar_url" placeholder="https://images.unsplash.com/..." className="pl-9" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bio">Biography / Specialties</Label>
+                <Textarea 
+                  id="bio" 
+                  name="bio" 
+                  placeholder="Expert in balayage and treatments..." 
+                  className="resize-none h-24"
+                />
+              </div>
+              <Button type="submit" className="w-full gradient-brand text-white shadow-lg hover:shadow-xl transition-all">
                 Add to Team
               </Button>
             </form>
@@ -77,24 +101,57 @@ export default async function TeamPage() {
                   {staff.map((member: any) => (
                     <div
                       key={member.id}
-                      className="flex items-start gap-4 rounded-xl border border-border bg-muted/30 p-4 transition-all hover:bg-muted/50"
+                      className="group relative flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 transition-all hover:shadow-md hover:border-primary/20"
                     >
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full gradient-brand text-white font-bold text-lg">
-                        {member.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-semibold truncate">{member.name}</h4>
-                          <Badge variant={member.is_active ? 'default' : 'destructive'} className="text-xs">
-                            {member.is_active ? 'Active' : 'Inactive'}
-                          </Badge>
+                      <div className="flex items-start gap-4">
+                        <Avatar className="h-16 w-16 border-2 border-primary/10">
+                          <AvatarImage src={member.avatar_url} alt={member.name} />
+                          <AvatarFallback className="gradient-brand text-white text-xl font-bold">
+                            {member.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <h4 className="font-bold text-lg truncate">{member.name}</h4>
+                            <Badge variant={member.is_active ? 'default' : 'secondary'} className="text-[10px] uppercase tracking-wider">
+                              {member.is_active ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </div>
+                          <p className="text-sm font-medium text-primary/80 capitalize">
+                            {member.role.replace('_', ' ')}
+                          </p>
+                          
+                          <div className="mt-3 flex flex-col gap-1.5">
+                            {member.email && (
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Mail className="h-3 w-3" />
+                                <span className="truncate">{member.email}</span>
+                              </div>
+                            )}
+                            {member.phone && (
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Phone className="h-3 w-3" />
+                                <span>{member.phone}</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-sm text-muted-foreground capitalize mt-0.5">
-                          {member.role.replace('_', ' ')}
-                        </p>
-                        {member.email && (
-                          <p className="text-xs text-muted-foreground mt-1 truncate">{member.email}</p>
-                        )}
+                      </div>
+
+                      {member.bio && (
+                        <div className="mt-2 border-t pt-3">
+                          <div className="flex items-start gap-2">
+                            <Info className="h-3 w-3 text-muted-foreground mt-1 shrink-0" />
+                            <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                              {member.bio}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {/* Optional: Add edit button here later */}
                       </div>
                     </div>
                   ))}

@@ -27,8 +27,13 @@ export async function createServiceCategory(formData: FormData) {
 
   const { data, error } = await supabase
     .from('service_categories')
-    .insert({ business_id: business.id, name, color })
+    .insert({
+      business_id: business.id,
+      name,
+      color,
+    })
     .select()
+    .single()
 
   return { data, error: error?.message }
 }
