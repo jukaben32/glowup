@@ -3,41 +3,39 @@
 import { createClient } from '@/lib/supabase/server'
 import { getMyBusiness } from './business'
 
-export async function getAISettings() {
+export async function getClients() {
   const supabase = await createClient()
   const { data: business } = await getMyBusiness()
   if (!business) return { error: 'No business found' }
 
   const { data, error } = await supabase
-    .from('ai_settings')
+    .from('clients')
     .select('*')
     .eq('business_id', business.id)
-    .single()
+    .order('created_at', { ascending: false })
 
   return { data, error: error?.message }
 }
 
-export async function updateAISettings(formData: FormData) {
+export async function createClientAction(formData: FormData) {
   const supabase = await createClient()
   const { data: business } = await getMyBusiness()
   if (!business) return { error: 'No business found' }
 
-  const theme_color = formData.get('theme_color') as string
-  const tone = formData.get('tone') as string
-  const prompt_context = formData.get('prompt_context') as string
-  
-  // Note: For complex JSON fields like active_days and faqs, in a real app
-  // you might pass a JSON string or handle it differently.
-  // Here we'll stick to updating basic strings.
+  const name = formData.get('name') as string
+  const email = formData.get('email') as string
+  const phone = formData.get('phone') as string
+  const notes = formData.get('notes') as string
 
   const { data, error } = await supabase
-    .from('ai_settings')
-    .update({
-      theme_color,
-      tone,
-      prompt_context,
+    .from('clients')
+    .insert({
+      business_id: business.id,
+      name,
+      email,
+      phone,
+      notes,
     })
-    .eq('business_id', business.id)
     .select()
 
   return { data, error: error?.message }
