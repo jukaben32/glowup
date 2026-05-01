@@ -1,6 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import { LayoutDashboard, Calendar, CalendarDays, Users, Scissors, Settings2, Wallet, LogOut, Settings, UserCircle } from 'lucide-react'
+import { LayoutDashboard, Calendar, CalendarDays, Users, Scissors, Settings2, Wallet, LogOut, Settings, UserCircle, HelpCircle, ShieldAlert } from 'lucide-react'
 import { signout } from '@/actions/auth'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -62,6 +62,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Link href="/pricing" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition-all hover:text-foreground hover:bg-muted">
               <Wallet className="h-4 w-4" />
               Billing
+            </Link>
+
+            <div className="my-2 px-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">Support</p>
+            </div>
+
+            <Link href="/help" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition-all hover:text-foreground hover:bg-muted">
+              <HelpCircle className="h-4 w-4" />
+              User Guide
+            </Link>
+            <Link href="/terms" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition-all hover:text-foreground hover:bg-muted">
+              <ShieldAlert className="h-4 w-4" />
+              Terms of Use
             </Link>
           </nav>
         </div>
