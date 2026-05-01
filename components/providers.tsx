@@ -1,7 +1,5 @@
-import React from 'react'
+'use client'
 
-const providers = () => {
-  return <div>providers</div>
+export function Providers({ children }: { children: React.ReactNode }) {
+  return <>{children}</>
 }
-
-export default providers
