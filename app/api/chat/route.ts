@@ -112,7 +112,7 @@ If a client doesn't have a preference for a professional, suggest one who offers
       if (toolUse.name === 'get_staff') {
         const { data: staff } = await supabase
           .from('staff_members')
-          .select('id, name, role')
+          .select('id, name, role, bio')
           .eq('business_id', business_id)
           .eq('is_active', true)
         return NextResponse.json({
@@ -123,12 +123,37 @@ If a client doesn't have a preference for a professional, suggest one who offers
 
       if (toolUse.name === 'get_available_slots') {
         const { date, staff_id } = toolUse.input
+        const dayOfWeek = new Date(date).getDay()
 
-        // Get existing appointments for that date
+        // 1. Get staff schedule for that day
+        let scheduleQuery = supabase
+          .from('staff_schedules')
+          .select('start_time, end_time, is_available')
+          .eq('day_of_week', dayOfWeek)
+
+        if (staff_id) {
+          scheduleQuery = scheduleQuery.eq('staff_id', staff_id)
+        } else {
+          // If no staff_id, check if ANY staff is available that day for the business
+          scheduleQuery = scheduleQuery.in('staff_id', 
+            (await supabase.from('staff_members').select('id').eq('business_id', business_id)).data?.map(s => s.id) || []
+          )
+        }
+
+        const { data: schedules } = await scheduleQuery
+        
+        if (!schedules || schedules.length === 0 || schedules.every(s => !s.is_available)) {
+          return NextResponse.json({
+            content: response.content,
+            toolResult: { tool_use_id: toolUse.id, content: JSON.stringify([]) }
+          })
+        }
+
+        // 2. Get existing appointments for that date
         const dayStart = `${date}T00:00:00Z`
         const dayEnd = `${date}T23:59:59Z`
 
-        let query = supabase
+        let apptQuery = supabase
           .from('appointments')
           .select('start_time, end_time')
           .eq('business_id', business_id)
@@ -137,15 +162,19 @@ If a client doesn't have a preference for a professional, suggest one who offers
           .neq('status', 'cancelled')
 
         if (staff_id) {
-          query = query.eq('staff_id', staff_id)
+          apptQuery = apptQuery.eq('staff_id', staff_id)
         }
 
-        const { data: existingAppts } = await query
-        const bookedTimes = new Set(existingAppts?.map(a => new Date(a.start_time).getHours()) || [])
+        const { data: existingAppts } = await apptQuery
+        const bookedTimes = new Set(existingAppts?.map(a => new Date(a.start_time).getUTCHours()) || [])
 
-        // Generate available slots (9am-6pm, skip booked hours)
+        // 3. Generate slots based on schedules
         const slots = []
-        for (let h = 9; h < 18; h++) {
+        // For simplicity, we take the earliest start and latest end among available staff
+        const startHour = Math.min(...schedules.map(s => parseInt(s.start_time.split(':')[0])))
+        const endHour = Math.max(...schedules.map(s => parseInt(s.end_time.split(':')[0])))
+
+        for (let h = startHour; h < endHour; h++) {
           if (!bookedTimes.has(h)) {
             const hour = h.toString().padStart(2, '0')
             slots.push(`${date}T${hour}:00:00Z`)
