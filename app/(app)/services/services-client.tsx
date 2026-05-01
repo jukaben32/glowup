@@ -17,7 +17,7 @@ function AddCategoryForm() {
         <CardTitle className="text-base">New Category</CardTitle>
       </CardHeader>
       <CardContent>
-        <form action={createServiceCategory} className="space-y-3">
+        <form action={createServiceCategory as any} className="space-y-3">
           <div className="space-y-2">
             <Label htmlFor="cat-name">Category Name</Label>
             <Input id="cat-name" name="name" placeholder="e.g. Haircuts, Nails, Color" required />
@@ -53,7 +53,7 @@ function AddServiceForm({ categories }: { categories: any[] }) {
         <CardTitle className="text-base">New Service</CardTitle>
       </CardHeader>
       <CardContent>
-        <form action={createService} className="space-y-3">
+        <form action={createService as any} className="space-y-3">
           <div className="space-y-2">
             <Label htmlFor="name">Service Name</Label>
             <Input id="name" name="name" placeholder="e.g. Classic Fade" required />

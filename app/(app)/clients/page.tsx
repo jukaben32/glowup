@@ -22,7 +22,7 @@ export default async function ClientsPage() {
               <CardTitle>Add New Client</CardTitle>
             </CardHeader>
             <CardContent>
-              <form action={createClientAction} className="space-y-4">
+              <form action={createClientAction as any} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
                   <Input id="name" name="name" required />

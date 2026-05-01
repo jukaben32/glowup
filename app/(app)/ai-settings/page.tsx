@@ -24,7 +24,7 @@ export default async function AISettingsPage() {
             <CardDescription>Adjust how the AI communicates and behaves.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form action={updateAISettings} className="space-y-4">
+            <form action={updateAISettings as any} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="theme_color">Widget Theme Color</Label>
                 <Select name="theme_color" defaultValue={aiSettings?.theme_color || 'blue'}>

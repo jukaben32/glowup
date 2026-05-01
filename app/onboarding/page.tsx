@@ -12,7 +12,7 @@ export default function OnboardingPage() {
           <h1 className="text-3xl font-bold tracking-tighter">Set Up Your Business</h1>
           <p className="text-muted-foreground">Just a few details to get your workspace ready.</p>
         </div>
-        <form action={createBusiness} className="space-y-4">
+        <form action={createBusiness as any} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Business Name</Label>
             <Input id="name" name="name" type="text" placeholder="e.g. Eddy's Barbershop" required />

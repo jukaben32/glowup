@@ -26,7 +26,7 @@ export default async function TeamPage() {
             <CardDescription>Register a new team member.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form action={createStaffMember} className="space-y-4">
+            <form action={createStaffMember as any} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
                 <Input id="name" name="name" placeholder="e.g. Maria Lopez" required />
