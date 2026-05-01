@@ -4,6 +4,9 @@ import { getAppointments } from '@/actions/appointments'
 import { getClients } from '@/actions/clients'
 import { getStaffMembers } from '@/actions/staff'
 import { getServices } from '@/actions/services'
+import { getMyBusiness } from '@/actions/business'
+import { getAISettings } from '@/actions/settings'
+import { SetupChecklist } from '@/components/dashboard/setup-checklist'
 import { CalendarDays, Users, Scissors, DollarSign, TrendingUp, UserCircle } from 'lucide-react'
 
 export default async function DashboardPage() {
@@ -11,6 +14,8 @@ export default async function DashboardPage() {
   const { data: clients } = await getClients()
   const { data: staff } = await getStaffMembers()
   const { data: services } = await getServices()
+  const { data: business } = await getMyBusiness()
+  const { data: aiSettings } = await getAISettings()
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -32,12 +37,24 @@ export default async function DashboardPage() {
     return sum + (a.services?.price || 0)
   }, 0)
 
+  // Checklist state
+  const checklist = {
+    services: (services?.length || 0) > 0,
+    staff: (staff?.length || 0) > 0,
+    ai: !!aiSettings?.prompt_context,
+    profile: !!(business?.phone && business?.address),
+    widget: !!aiSettings // Simplified check
+  }
+
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <p className="text-muted-foreground">Welcome back! Here&apos;s what&apos;s happening today.</p>
       </div>
+
+      {/* Setup Checklist */}
+      <SetupChecklist checks={checklist} />
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
