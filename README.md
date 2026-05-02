@@ -41,7 +41,16 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ANTHROPIC_API_KEY=your_anthropic_api_key
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Optional: restrict Server Actions to your deployment hostnames (comma-separated, no protocol)
+SERVER_ACTIONS_ALLOWED_ORIGINS=localhost:3000
+
+# Optional: same random string in BOTH vars protects POST /api/chat from casual abuse (token is visible in the browser bundle — combine with rate limits for production)
+WIDGET_EMBED_TOKEN=
+NEXT_PUBLIC_WIDGET_EMBED_TOKEN=
 ```
+
+See `.env.local.example` for the full list.
 
 ## License
 

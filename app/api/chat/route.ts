@@ -1,22 +1,66 @@
 import { NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+import { z } from 'zod'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',
 })
 
+const chatPostSchema = z.object({
+  business_id: z.string().uuid(),
+  messages: z.array(z.unknown()).min(1, 'messages must include at least one entry'),
+})
+
 export async function POST(req: Request) {
   try {
-    const { messages, business_id } = await req.json()
+    const expectedEmbed = process.env.WIDGET_EMBED_TOKEN
+    if (expectedEmbed) {
+      const headerToken = req.headers.get('x-embed-token')
+      if (headerToken !== expectedEmbed) {
+        return NextResponse.json({ error: 'Invalid or missing embed token' }, { status: 401 })
+      }
+    }
 
-    if (!business_id) {
-      return NextResponse.json({ error: 'business_id is required' }, { status: 400 })
+    let json: unknown
+    try {
+      json = await req.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+
+    const parsed = chatPostSchema.safeParse(json)
+    if (!parsed.success) {
+      const msg = parsed.error.flatten().formErrors.join('; ') || parsed.error.message
+      return NextResponse.json({ error: msg }, { status: 400 })
+    }
+
+    const { business_id, messages } = parsed.data
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      return NextResponse.json(
+        { error: 'Supabase env vars are missing: NEXT_PUBLIC_SUPABASE_URL and/or SUPABASE_SERVICE_ROLE_KEY' },
+        { status: 500 }
+      )
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey)
+
+    const { data: businessRow, error: businessLookupErr } = await supabase
+      .from('businesses')
+      .select('id')
+      .eq('id', business_id)
+      .maybeSingle()
+
+    if (businessLookupErr || !businessRow) {
+      return NextResponse.json({ error: 'Business not found' }, { status: 404 })
+    }
+
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json({ error: 'ANTHROPIC_API_KEY is not configured' }, { status: 500 })
     }
 
     const { data: aiSettings } = await supabase
@@ -50,7 +94,7 @@ If a client doesn't have a preference for a professional, suggest one who offers
       model: 'claude-3-haiku-20240307',
       max_tokens: 1024,
       system: systemPrompt,
-      messages: messages,
+      messages: messages as Anthropic.MessageCreateParams['messages'],
       tools: [
         {
           name: 'get_services',

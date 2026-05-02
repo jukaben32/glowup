@@ -41,9 +41,13 @@ export default function WidgetPage({ params }: { params: Promise<{ businessId: s
   }
 
   const processChat = async (chatMessages: any[]) => {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    const embed = process.env.NEXT_PUBLIC_WIDGET_EMBED_TOKEN
+    if (embed) headers['x-embed-token'] = embed
+
     const res = await fetch('/api/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ messages: chatMessages, business_id: businessId })
     })
     
@@ -71,7 +75,12 @@ export default function WidgetPage({ params }: { params: Promise<{ businessId: s
       await processChat(extendedMessages)
     } else {
       // Final text response from AI
-      const aiResponse = { role: 'assistant', content: data.content[0].text }
+      const block = Array.isArray(data.content) ? data.content[0] : null
+      const text =
+        block?.type === 'text' && typeof block.text === 'string'
+          ? block.text
+          : 'Sorry, I could not read the assistant response.'
+      const aiResponse = { role: 'assistant', content: text }
       setMessages(prev => [...prev, aiResponse])
       setLoading(false)
     }
